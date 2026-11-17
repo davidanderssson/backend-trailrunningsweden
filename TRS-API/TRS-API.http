@@ -1,0 +1,6 @@
+@TRS_API_HostAddress = http://localhost:5119
+
+GET {{TRS_API_HostAddress}}/health/
+Accept: application/json
+
+###
