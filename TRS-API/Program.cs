@@ -1,20 +1,53 @@
+using Microsoft.EntityFrameworkCore;
+using TRS_API.Middleware;
+using TRS_API.OpenApi;
+using TRS_Lib.Data;
+using TRS_Lib.Repositories;
+using TRS_Lib.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+// ConnectionStrings:Default wins; otherwise use DATABASE_URL, which Railway provides
+var databaseUrl = builder.Configuration["DATABASE_URL"];
+var connectionString = builder.Configuration.GetConnectionString("Default")
+    ?? (string.IsNullOrWhiteSpace(databaseUrl) ? null : DatabaseUrl.ToConnectionString(databaseUrl));
+
+builder.Services.AddDbContext<TrsDbContext>(options =>
+    options.UseNpgsql(connectionString));
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IOneTimePasswordRepository, OneTimePasswordRepository>();
+builder.Services.AddScoped<OneTimePasswordService>();
+
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, _, _) =>
+    {
+        document.Info.Title = "TRS API";
+        document.Info.Version = "v1";
+        return Task.CompletedTask;
+    });
+    options.AddDocumentTransformer<ApiKeyTransformer>();
+    options.AddOperationTransformer<ApiKeyTransformer>();
+});
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// Swagger is on in Development; enable it elsewhere with the Swagger__Enabled=true setting
+if (app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>("Swagger:Enabled"))
 {
-    app.MapOpenApi();
+    app.MapOpenApi().WithMetadata(new AllowWithoutApiKeyAttribute());
+    // Registered before the API key check so the UI itself loads without a key
+    app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "TRS API v1"));
 }
 
 app.UseHttpsRedirection();
+
+app.UseMiddleware<ApiKeyMiddleware>();
 
 app.UseAuthorization();
 

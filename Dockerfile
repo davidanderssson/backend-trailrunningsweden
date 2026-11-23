@@ -16,6 +16,9 @@ COPY --from=build /app/publish .
 
 # Railway injects PORT; fall back to 8080 when running locally
 ENV PORT=8080
+# Railway terminates HTTPS in front of the container; trust its X-Forwarded-* headers
+# so the app (and the server URL in Swagger) knows the original request was https
+ENV ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
 EXPOSE 8080
 USER $APP_UID
 ENTRYPOINT ["sh", "-c", "ASPNETCORE_HTTP_PORTS=$PORT exec dotnet TRS-API.dll"]

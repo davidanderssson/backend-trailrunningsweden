@@ -1,6 +1,40 @@
 @TRS_API_HostAddress = http://localhost:5119
+@ApiKey = xyz
 
 GET {{TRS_API_HostAddress}}/health/
 Accept: application/json
+
+###
+
+POST {{TRS_API_HostAddress}}/user/
+X-API-KEY: {{ApiKey}}
+Content-Type: application/json
+
+{
+  "firstName": "Anna",
+  "lastName": "Svensson",
+  "email": "anna@example.com"
+}
+
+###
+
+POST {{TRS_API_HostAddress}}/user/login/
+X-API-KEY: {{ApiKey}}
+Content-Type: application/json
+
+{
+  "email": "anna@example.com"
+}
+
+###
+
+POST {{TRS_API_HostAddress}}/user/login/verify/
+X-API-KEY: {{ApiKey}}
+Content-Type: application/json
+
+{
+  "email": "anna@example.com",
+  "code": "123456"
+}
 
 ###
