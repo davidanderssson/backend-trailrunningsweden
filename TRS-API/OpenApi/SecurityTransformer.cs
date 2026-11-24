@@ -1,13 +1,14 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi;
+using TRS_API.Authorization;
 using TRS_API.Middleware;
 
 namespace TRS_API.OpenApi;
 
 // Documents the X-API-KEY header and the bearer token, and adds them, plus a 401 response, to each
 // operation that needs them: the API key unless it has [AllowWithoutApiKey], the bearer token if it
-// has [Authorize]. New endpoints are covered automatically.
+// has [Authorize], and a 403 response for endpoints that require the Admin policy. New endpoints are covered automatically.
 public class SecurityTransformer : IOpenApiDocumentTransformer, IOpenApiOperationTransformer
 {
     private const string ApiKeySchemeName = "ApiKey";
@@ -66,6 +67,14 @@ public class SecurityTransformer : IOpenApiDocumentTransformer, IOpenApiOperatio
         };
         operation.Responses ??= new OpenApiResponses();
         operation.Responses.TryAdd("401", new OpenApiResponse { Description = description });
+
+        if (metadata.OfType<IAuthorizeData>().Any(a => a.Policy == Policies.Admin))
+        {
+            operation.Description = string.IsNullOrEmpty(operation.Description)
+                ? "Requires an admin user."
+                : operation.Description + "\n\nRequires an admin user.";
+            operation.Responses.TryAdd("403", new OpenApiResponse { Description = "The logged in user is not an admin" });
+        }
         return Task.CompletedTask;
     }
 }

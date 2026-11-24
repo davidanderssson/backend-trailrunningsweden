@@ -1,13 +1,14 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using TRS_API.Authorization;
 using TRS_API.Extensions;
 using TRS_Lib.Dtos;
 using TRS_Lib.Repositories;
 
 namespace TRS_API.Controllers;
 
-// Reading needs only the API key. Creating, changing and deleting needs a logged in user.
+// Reading needs only the API key. Creating, changing and deleting needs a logged in admin.
 [ApiController]
 [Route("[controller]")]
 [Produces("application/json")]
@@ -77,7 +78,7 @@ public class GeographyController(IGeographyRepository geography) : ControllerBas
     /// <response code="400">The request body is invalid.</response>
     /// <response code="409">A country with that name already exists.</response>
     [HttpPost("countries")]
-    [Authorize]
+    [Authorize(Policy = Policies.Admin)]
     [Consumes("application/json")]
     [ProducesResponseType<CountryDto>(StatusCodes.Status201Created)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
@@ -102,7 +103,7 @@ public class GeographyController(IGeographyRepository geography) : ControllerBas
     /// <response code="404">The country does not exist.</response>
     /// <response code="409">A country with that name already exists.</response>
     [HttpPut("countries/{id:int}")]
-    [Authorize]
+    [Authorize(Policy = Policies.Admin)]
     [Consumes("application/json")]
     [ProducesResponseType<CountryDto>(StatusCodes.Status200OK)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
@@ -128,7 +129,7 @@ public class GeographyController(IGeographyRepository geography) : ControllerBas
     /// <response code="404">The country does not exist.</response>
     /// <response code="409">The country still has provinces.</response>
     [HttpDelete("countries/{id:int}")]
-    [Authorize]
+    [Authorize(Policy = Policies.Admin)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
@@ -188,7 +189,7 @@ public class GeographyController(IGeographyRepository geography) : ControllerBas
     /// <response code="400">The request body is invalid, or the country does not exist.</response>
     /// <response code="409">The country already has a province with that name.</response>
     [HttpPost("provinces")]
-    [Authorize]
+    [Authorize(Policy = Policies.Admin)]
     [Consumes("application/json")]
     [ProducesResponseType<ProvinceDto>(StatusCodes.Status201Created)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
@@ -216,7 +217,7 @@ public class GeographyController(IGeographyRepository geography) : ControllerBas
     /// <response code="404">The province does not exist.</response>
     /// <response code="409">The country already has a province with that name.</response>
     [HttpPut("provinces/{id:int}")]
-    [Authorize]
+    [Authorize(Policy = Policies.Admin)]
     [Consumes("application/json")]
     [ProducesResponseType<ProvinceDto>(StatusCodes.Status200OK)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
@@ -247,7 +248,7 @@ public class GeographyController(IGeographyRepository geography) : ControllerBas
     /// <response code="404">The province does not exist.</response>
     /// <response code="409">The province still has municipalities.</response>
     [HttpDelete("provinces/{id:int}")]
-    [Authorize]
+    [Authorize(Policy = Policies.Admin)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
@@ -291,7 +292,7 @@ public class GeographyController(IGeographyRepository geography) : ControllerBas
     /// <response code="400">The request body is invalid, or the province does not exist.</response>
     /// <response code="409">The province already has a municipality with that name.</response>
     [HttpPost("municipalities")]
-    [Authorize]
+    [Authorize(Policy = Policies.Admin)]
     [Consumes("application/json")]
     [ProducesResponseType<MunicipalityDto>(StatusCodes.Status201Created)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
@@ -319,7 +320,7 @@ public class GeographyController(IGeographyRepository geography) : ControllerBas
     /// <response code="404">The municipality does not exist.</response>
     /// <response code="409">The province already has a municipality with that name.</response>
     [HttpPut("municipalities/{id:int}")]
-    [Authorize]
+    [Authorize(Policy = Policies.Admin)]
     [Consumes("application/json")]
     [ProducesResponseType<MunicipalityDto>(StatusCodes.Status200OK)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
@@ -348,7 +349,7 @@ public class GeographyController(IGeographyRepository geography) : ControllerBas
     /// <response code="204">The municipality was deleted.</response>
     /// <response code="404">The municipality does not exist.</response>
     [HttpDelete("municipalities/{id:int}")]
-    [Authorize]
+    [Authorize(Policy = Policies.Admin)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteMunicipality(int id, CancellationToken cancellationToken)

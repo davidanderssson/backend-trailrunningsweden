@@ -9,13 +9,14 @@
 - Get the logged in user's id with `User.GetUserId()` (`TRS-API/Extensions/ClaimsPrincipalExtensions.cs`), never from the request body.
 - Models go in `TRS-Lib/Models`, request/response DTOs in `TRS-Lib/Dtos`. Never return anonymous objects from controllers; add a DTO so Swagger can describe it.
 - Every endpoint requires the `X-API-KEY` header unless the controller or action has `[AllowWithoutApiKey]`.
+- Endpoints only admins may use get `[Authorize(Policy = Policies.Admin)]` (`TRS-API/Authorization`). The policy checks `User.Admin` in the database on every request. `Admin` is never settable through the API.
 - Endpoints that need a logged in user get `[Authorize]` and read the user id from the `sub` claim (`User.FindFirstValue(JwtRegisteredClaimNames.Sub)`). Access tokens last 60 minutes, refresh tokens 30 days and are rotated on every use (`TRS-Lib/Services/TokenService.cs`).
 - Every controller action must be documented for Swagger:
   - `/// <summary>` and, where useful, `/// <remarks>` on the action
   - `/// <response code="...">` plus a matching `[ProducesResponseType]` for each status code it can return (typed with `<T>` when there is a body)
   - `[Consumes("application/json")]` on actions with a body; `[Produces("application/json")]` and `[Tags("...")]` on the controller
   - `/// <summary>` and `/// <example>` on DTO properties
-  - The 401 response and the API key / bearer token requirements are added automatically by `TRS-API/OpenApi/SecurityTransformer.cs`; don't declare them by hand.
+  - The 401 response, the 403 response for admin-only endpoints, and the API key / bearer token requirements are added automatically by `TRS-API/OpenApi/SecurityTransformer.cs`; don't declare them by hand.
 - Swagger UI: `/swagger`. OpenAPI document: `/openapi/v1.json`.
 
 ## Database

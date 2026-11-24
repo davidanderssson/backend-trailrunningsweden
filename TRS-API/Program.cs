@@ -1,7 +1,9 @@
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using TRS_API.Authorization;
 using TRS_API.Middleware;
 using TRS_API.OpenApi;
 using TRS_Lib.Data;
@@ -43,7 +45,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ClockSkew = TimeSpan.FromSeconds(30)
         };
     });
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy(Policies.Admin, policy => policy.RequireAuthenticatedUser().AddRequirements(new AdminRequirement()));
+builder.Services.AddScoped<IAuthorizationHandler, AdminHandler>();
 
 // Enums are sent and received as their names ("Approved", "Owner"), not as numbers
 builder.Services.AddControllers()
