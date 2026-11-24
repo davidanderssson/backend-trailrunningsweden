@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -23,6 +24,7 @@ builder.Services.AddScoped<IOneTimePasswordRepository, OneTimePasswordRepository
 builder.Services.AddScoped<OneTimePasswordService>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<IOrganizationRepository, OrganizationRepository>();
 
 var jwtSettings = JwtSettings.FromConfiguration(builder.Configuration);
 builder.Services.AddSingleton(jwtSettings);
@@ -42,7 +44,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 builder.Services.AddAuthorization();
 
-builder.Services.AddControllers();
+// Enums are sent and received as their names ("Approved", "Owner"), not as numbers
+builder.Services.AddControllers()
+    .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false)));
+// The OpenAPI document reads these options, so Swagger shows the enums as strings too
+builder.Services.ConfigureHttpJsonOptions(options =>
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false)));
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi(options =>
 {

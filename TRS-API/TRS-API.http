@@ -68,3 +68,50 @@ X-API-KEY: {{ApiKey}}
 Authorization: Bearer {{AccessToken}}
 
 ###
+
+POST {{TRS_API_HostAddress}}/organization/
+X-API-KEY: {{ApiKey}}
+Authorization: Bearer {{AccessToken}}
+Content-Type: application/json
+
+{
+  "name": "Trailrunning Sweden"
+}
+
+###
+
+GET {{TRS_API_HostAddress}}/organization/1/members/
+X-API-KEY: {{ApiKey}}
+Authorization: Bearer {{AccessToken}}
+
+###
+
+POST {{TRS_API_HostAddress}}/organization/1/members/
+X-API-KEY: {{ApiKey}}
+Authorization: Bearer {{AccessToken}}
+Content-Type: application/json
+
+{
+  "userId": 2,
+  "memberType": "Member"
+}
+
+###
+
+DELETE {{TRS_API_HostAddress}}/organization/1/members/2/
+X-API-KEY: {{ApiKey}}
+Authorization: Bearer {{AccessToken}}
+
+###
+
+POST {{TRS_API_HostAddress}}/organization/1/membership-requests/
+X-API-KEY: {{ApiKey}}
+Authorization: Bearer {{AccessToken}}
+
+###
+
+POST {{TRS_API_HostAddress}}/organization/1/members/2/approve/
+X-API-KEY: {{ApiKey}}
+Authorization: Bearer {{AccessToken}}
+
+###

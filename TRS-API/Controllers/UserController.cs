@@ -1,9 +1,8 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.JsonWebTokens;
 using Npgsql;
+using TRS_API.Extensions;
 using TRS_Lib.Dtos;
 using TRS_Lib.Models;
 using TRS_Lib.Repositories;
@@ -114,7 +113,7 @@ public class UserController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Me(CancellationToken cancellationToken)
     {
-        if (!int.TryParse(User.FindFirstValue(JwtRegisteredClaimNames.Sub), out var userId))
+        if (User.GetUserId() is not { } userId)
         {
             return Unauthorized();
         }

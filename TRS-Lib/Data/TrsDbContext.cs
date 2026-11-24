@@ -8,6 +8,8 @@ public class TrsDbContext(DbContextOptions<TrsDbContext> options) : DbContext(op
     public DbSet<User> Users => Set<User>();
     public DbSet<OneTimePassword> OneTimePasswords => Set<OneTimePassword>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<Organization> Organizations => Set<Organization>();
+    public DbSet<OrganizationMember> OrganizationMembers => Set<OrganizationMember>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -41,6 +43,29 @@ public class TrsDbContext(DbContextOptions<TrsDbContext> options) : DbContext(op
                 .HasForeignKey(r => r.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
             token.HasIndex(r => r.UserId);
+        });
+
+        modelBuilder.Entity<Organization>(organization =>
+        {
+            organization.HasKey(o => o.Id);
+            organization.Property(o => o.Name).HasMaxLength(200);
+        });
+
+        modelBuilder.Entity<OrganizationMember>(member =>
+        {
+            member.HasKey(m => new { m.OrganizationId, m.UserId });
+            member.HasOne(m => m.Organization)
+                .WithMany()
+                .HasForeignKey(m => m.OrganizationId)
+                .OnDelete(DeleteBehavior.Cascade);
+            member.HasOne(m => m.User)
+                .WithMany()
+                .HasForeignKey(m => m.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            member.HasIndex(m => m.UserId);
+            // Stored as text ("Requested", "Owner", ...) so the data is readable and enum reordering can't corrupt it
+            member.Property(m => m.Status).HasConversion<string>().HasMaxLength(20);
+            member.Property(m => m.MemberType).HasConversion<string>().HasMaxLength(20);
         });
     }
 }
