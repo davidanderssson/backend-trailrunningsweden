@@ -8,8 +8,8 @@ public interface IRefreshTokenRepository
     Task<RefreshToken?> FindByHashAsync(string tokenHash, CancellationToken cancellationToken = default);
 
     // Atomically marks the token as used. Returns false if it was already used or revoked.
-    Task<bool> TryMarkUsedAsync(Guid id, DateTimeOffset now, CancellationToken cancellationToken = default);
+    Task<bool> TryMarkUsedAsync(int id, DateTimeOffset now, CancellationToken cancellationToken = default);
 
-    Task RevokeAsync(Guid id, DateTimeOffset now, CancellationToken cancellationToken = default);
-    Task RevokeAllForUserAsync(Guid userId, DateTimeOffset now, CancellationToken cancellationToken = default);
+    Task RevokeAsync(int id, DateTimeOffset now, CancellationToken cancellationToken = default);
+    Task RevokeAllForUserAsync(int userId, DateTimeOffset now, CancellationToken cancellationToken = default);
 }

@@ -8,11 +8,6 @@ public class OneTimePasswordRepository(TrsDbContext db) : IOneTimePasswordReposi
 {
     public async Task ReplaceForUserAsync(OneTimePassword oneTimePassword, CancellationToken cancellationToken = default)
     {
-        if (oneTimePassword.Id == Guid.Empty)
-        {
-            oneTimePassword.Id = Guid.CreateVersion7();
-        }
-
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
 
         await db.OneTimePasswords
@@ -25,7 +20,7 @@ public class OneTimePasswordRepository(TrsDbContext db) : IOneTimePasswordReposi
         await transaction.CommitAsync(cancellationToken);
     }
 
-    public Task<OneTimePassword?> FindActiveForUserAsync(Guid userId, DateTimeOffset now, CancellationToken cancellationToken = default)
+    public Task<OneTimePassword?> FindActiveForUserAsync(int userId, DateTimeOffset now, CancellationToken cancellationToken = default)
     {
         return db.OneTimePasswords
             .AsNoTracking()
@@ -34,7 +29,7 @@ public class OneTimePasswordRepository(TrsDbContext db) : IOneTimePasswordReposi
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<bool> TryRegisterAttemptAsync(Guid id, int maxAttempts, CancellationToken cancellationToken = default)
+    public async Task<bool> TryRegisterAttemptAsync(int id, int maxAttempts, CancellationToken cancellationToken = default)
     {
         var updated = await db.OneTimePasswords
             .Where(o => o.Id == id && o.Attempts < maxAttempts)
@@ -42,7 +37,7 @@ public class OneTimePasswordRepository(TrsDbContext db) : IOneTimePasswordReposi
         return updated > 0;
     }
 
-    public async Task<bool> TryMarkUsedAsync(Guid id, DateTimeOffset now, CancellationToken cancellationToken = default)
+    public async Task<bool> TryMarkUsedAsync(int id, DateTimeOffset now, CancellationToken cancellationToken = default)
     {
         var updated = await db.OneTimePasswords
             .Where(o => o.Id == id && o.UsedAt == null)

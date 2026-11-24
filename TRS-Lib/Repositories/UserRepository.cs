@@ -8,17 +8,12 @@ public class UserRepository(TrsDbContext db) : IUserRepository
 {
     public async Task<User> CreateAsync(User user, CancellationToken cancellationToken = default)
     {
-        if (user.Id == Guid.Empty)
-        {
-            user.Id = Guid.CreateVersion7();
-        }
-
         db.Users.Add(user);
         await db.SaveChangesAsync(cancellationToken);
         return user;
     }
 
-    public Task<User?> FindAsync(Guid id, CancellationToken cancellationToken = default)
+    public Task<User?> FindAsync(int id, CancellationToken cancellationToken = default)
     {
         return db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
     }
@@ -46,7 +41,7 @@ public class UserRepository(TrsDbContext db) : IUserRepository
     }
 
     // Returns false if no user with that id exists
-    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
         var deleted = await db.Users.Where(u => u.Id == id).ExecuteDeleteAsync(cancellationToken);
         return deleted > 0;

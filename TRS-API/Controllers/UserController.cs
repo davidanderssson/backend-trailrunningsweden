@@ -114,7 +114,7 @@ public class UserController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Me(CancellationToken cancellationToken)
     {
-        if (!Guid.TryParse(User.FindFirstValue(JwtRegisteredClaimNames.Sub), out var userId))
+        if (!int.TryParse(User.FindFirstValue(JwtRegisteredClaimNames.Sub), out var userId))
         {
             return Unauthorized();
         }

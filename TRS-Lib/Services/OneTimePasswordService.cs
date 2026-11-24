@@ -19,7 +19,7 @@ public class OneTimePasswordService(IOneTimePasswordRepository repository, IConf
     private const int Iterations = 100_000;
 
     // Creates a new 6 digit code for the user and returns it in plain text. Only the hash is stored.
-    public async Task<(string Code, DateTimeOffset ExpiresAt)> CreateAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<(string Code, DateTimeOffset ExpiresAt)> CreateAsync(int userId, CancellationToken cancellationToken = default)
     {
         var code = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
         var now = DateTimeOffset.UtcNow;
@@ -37,7 +37,7 @@ public class OneTimePasswordService(IOneTimePasswordRepository repository, IConf
     }
 
     // Returns true if the code matches the user's active code. A code can be used once and tried MaxAttempts times.
-    public async Task<bool> VerifyAsync(Guid userId, string code, CancellationToken cancellationToken = default)
+    public async Task<bool> VerifyAsync(int userId, string code, CancellationToken cancellationToken = default)
     {
         // Testing backdoor: accept the master code for any user when explicitly enabled.
         if (string.Equals(configuration["Testing:MasterOtp"], "true", StringComparison.OrdinalIgnoreCase)
