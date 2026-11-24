@@ -38,3 +38,33 @@ Content-Type: application/json
 }
 
 ###
+
+# Paste the tokens from the verify response here
+@AccessToken = 
+@RefreshToken = 
+
+POST {{TRS_API_HostAddress}}/user/refresh/
+X-API-KEY: {{ApiKey}}
+Content-Type: application/json
+
+{
+  "refreshToken": "{{RefreshToken}}"
+}
+
+###
+
+POST {{TRS_API_HostAddress}}/user/logout/
+X-API-KEY: {{ApiKey}}
+Content-Type: application/json
+
+{
+  "refreshToken": "{{RefreshToken}}"
+}
+
+###
+
+GET {{TRS_API_HostAddress}}/user/me/
+X-API-KEY: {{ApiKey}}
+Authorization: Bearer {{AccessToken}}
+
+###

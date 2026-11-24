@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using TRS_API.Middleware;
 using TRS_API.OpenApi;
 using TRS_Lib.Data;
@@ -19,6 +21,26 @@ builder.Services.AddDbContext<TrsDbContext>(options =>
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IOneTimePasswordRepository, OneTimePasswordRepository>();
 builder.Services.AddScoped<OneTimePasswordService>();
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+builder.Services.AddScoped<TokenService>();
+
+var jwtSettings = JwtSettings.FromConfiguration(builder.Configuration);
+builder.Services.AddSingleton(jwtSettings);
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        // Keep claim names as they are in the token ("sub", "email"), instead of mapping them to long URIs
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidIssuer = jwtSettings.Issuer,
+            ValidAudience = jwtSettings.Audience,
+            IssuerSigningKey = jwtSettings.SigningKey,
+            ValidAlgorithms = [SecurityAlgorithms.HmacSha256],
+            ClockSkew = TimeSpan.FromSeconds(30)
+        };
+    });
+builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -30,8 +52,8 @@ builder.Services.AddOpenApi(options =>
         document.Info.Version = "v1";
         return Task.CompletedTask;
     });
-    options.AddDocumentTransformer<ApiKeyTransformer>();
-    options.AddOperationTransformer<ApiKeyTransformer>();
+    options.AddDocumentTransformer<SecurityTransformer>();
+    options.AddOperationTransformer<SecurityTransformer>();
 });
 
 var app = builder.Build();
@@ -49,6 +71,7 @@ app.UseHttpsRedirection();
 
 app.UseMiddleware<ApiKeyMiddleware>();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

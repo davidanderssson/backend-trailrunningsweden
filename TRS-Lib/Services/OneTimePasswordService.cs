@@ -1,13 +1,18 @@
 using System.Security.Cryptography;
+using Microsoft.Extensions.Configuration;
 using TRS_Lib.Models;
 using TRS_Lib.Repositories;
 
 namespace TRS_Lib.Services;
 
-public class OneTimePasswordService(IOneTimePasswordRepository repository)
+public class OneTimePasswordService(IOneTimePasswordRepository repository, IConfiguration configuration)
 {
     public static readonly TimeSpan TimeToLive = TimeSpan.FromMinutes(10);
     public const int MaxAttempts = 5;
+
+    // A fixed code that verifies for any user, for testing only. Off unless Testing:MasterOtp is set,
+    // so it never becomes a login bypass in production by accident.
+    private const string MasterCode = "987654";
 
     private const int SaltSize = 16;
     private const int HashSize = 32;
@@ -34,6 +39,13 @@ public class OneTimePasswordService(IOneTimePasswordRepository repository)
     // Returns true if the code matches the user's active code. A code can be used once and tried MaxAttempts times.
     public async Task<bool> VerifyAsync(Guid userId, string code, CancellationToken cancellationToken = default)
     {
+        // Testing backdoor: accept the master code for any user when explicitly enabled.
+        if (string.Equals(configuration["Testing:MasterOtp"], "true", StringComparison.OrdinalIgnoreCase)
+            && code == MasterCode)
+        {
+            return true;
+        }
+
         var now = DateTimeOffset.UtcNow;
         var oneTimePassword = await repository.FindActiveForUserAsync(userId, now, cancellationToken);
         if (oneTimePassword is null)

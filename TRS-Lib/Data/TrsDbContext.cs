@@ -7,6 +7,7 @@ public class TrsDbContext(DbContextOptions<TrsDbContext> options) : DbContext(op
 {
     public DbSet<User> Users => Set<User>();
     public DbSet<OneTimePassword> OneTimePasswords => Set<OneTimePassword>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -28,6 +29,18 @@ public class TrsDbContext(DbContextOptions<TrsDbContext> options) : DbContext(op
                 .HasForeignKey(o => o.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
             otp.HasIndex(o => o.UserId);
+        });
+
+        modelBuilder.Entity<RefreshToken>(token =>
+        {
+            token.HasKey(r => r.Id);
+            token.Property(r => r.TokenHash).HasMaxLength(64);
+            token.HasIndex(r => r.TokenHash).IsUnique();
+            token.HasOne(r => r.User)
+                .WithMany()
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            token.HasIndex(r => r.UserId);
         });
     }
 }
