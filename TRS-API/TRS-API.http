@@ -115,3 +115,35 @@ X-API-KEY: {{ApiKey}}
 Authorization: Bearer {{AccessToken}}
 
 ###
+
+GET {{TRS_API_HostAddress}}/geography/countries/
+X-API-KEY: {{ApiKey}}
+
+###
+
+GET {{TRS_API_HostAddress}}/geography/countries/1/provinces/
+X-API-KEY: {{ApiKey}}
+
+###
+
+GET {{TRS_API_HostAddress}}/geography/countries/1/municipalities/
+X-API-KEY: {{ApiKey}}
+
+###
+
+GET {{TRS_API_HostAddress}}/geography/provinces/15/municipalities/
+X-API-KEY: {{ApiKey}}
+
+###
+
+POST {{TRS_API_HostAddress}}/geography/municipalities/
+X-API-KEY: {{ApiKey}}
+Authorization: Bearer {{AccessToken}}
+Content-Type: application/json
+
+{
+  "provinceId": 15,
+  "name": "Ny kommun"
+}
+
+###

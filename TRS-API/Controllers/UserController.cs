@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 using TRS_API.Extensions;
 using TRS_Lib.Dtos;
 using TRS_Lib.Models;
@@ -144,7 +143,7 @@ public class UserController(
         {
             await userRepository.CreateAsync(user, cancellationToken);
         }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        catch (DbUpdateException ex) when (ex.IsUniqueViolation())
         {
             return Problem(statusCode: StatusCodes.Status409Conflict, title: "A user with that email already exists.");
         }
