@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using TRS_Lib.Data.Seed;
 using TRS_Lib.Models;
 
 namespace TRS_Lib.Data;
@@ -10,6 +11,9 @@ public class TrsDbContext(DbContextOptions<TrsDbContext> options) : DbContext(op
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<Organization> Organizations => Set<Organization>();
     public DbSet<OrganizationMember> OrganizationMembers => Set<OrganizationMember>();
+    public DbSet<Country> Countries => Set<Country>();
+    public DbSet<Province> Provinces => Set<Province>();
+    public DbSet<Municipality> Municipalities => Set<Municipality>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -66,6 +70,44 @@ public class TrsDbContext(DbContextOptions<TrsDbContext> options) : DbContext(op
             // Stored as text ("Requested", "Owner", ...) so the data is readable and enum reordering can't corrupt it
             member.Property(m => m.Status).HasConversion<string>().HasMaxLength(20);
             member.Property(m => m.MemberType).HasConversion<string>().HasMaxLength(20);
+        });
+
+        // Geography is reference data, so deletes are restricted rather than cascading
+        modelBuilder.Entity<Country>(country =>
+        {
+            country.HasKey(c => c.Id);
+            country.Property(c => c.Name).HasMaxLength(100);
+            country.HasIndex(c => c.Name).IsUnique();
+            country.HasData(SwedenSeed.Country);
+        });
+
+        modelBuilder.Entity<Province>(province =>
+        {
+            province.HasKey(p => p.Id);
+            province.Property(p => p.Name).HasMaxLength(100);
+            province.HasOne(p => p.Country)
+                .WithMany()
+                .HasForeignKey(p => p.CountryId)
+                .OnDelete(DeleteBehavior.Restrict);
+            province.HasIndex(p => new { p.CountryId, p.Name }).IsUnique();
+            province.HasData(SwedenSeed.GetProvinces());
+        });
+
+        modelBuilder.Entity<Municipality>(municipality =>
+        {
+            municipality.HasKey(m => m.Id);
+            municipality.Property(m => m.Name).HasMaxLength(100);
+            municipality.HasOne(m => m.Province)
+                .WithMany()
+                .HasForeignKey(m => m.ProvinceId)
+                .OnDelete(DeleteBehavior.Restrict);
+            municipality.HasOne(m => m.Country)
+                .WithMany()
+                .HasForeignKey(m => m.CountryId)
+                .OnDelete(DeleteBehavior.Restrict);
+            municipality.HasIndex(m => new { m.ProvinceId, m.Name }).IsUnique();
+            municipality.HasIndex(m => m.CountryId);
+            municipality.HasData(SwedenSeed.GetMunicipalities());
         });
     }
 }
